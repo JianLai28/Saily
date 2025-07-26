@@ -25,7 +25,7 @@ jobs:
           brew install ldid dpkg
 
       - name: Cache Swift Packages
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         with:
           path: |
             ~/Library/Developer/Xcode/DerivedData
@@ -40,7 +40,7 @@ jobs:
           Resources/compile.release.roothide.sh
 
       - name: Upload Artifact
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: roothide-deb-package
           path: "*.deb"
