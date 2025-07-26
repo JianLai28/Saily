@@ -189,16 +189,50 @@ extension PackageCenter {
                     // get newest version that exists
                     let summay = [Package](self.obtainPackageSummary(with: item).values)
                     guard summay.count > 0 else { continue }
-                    var repoRef: URL? = summay[0].repoRef
-                    var newestVersion = summay[0].latestVersion ?? "0"
-                    for value in summay {
-                        if let version = value.latestVersion,
-                           Package.compareVersion(version, b: newestVersion) == .aIsBiggerThenB
-                        {
-                            newestVersion = version
-                            repoRef = value.repoRef
+                    
+                    // Group packages by version to handle RootHide priority based on architecture
+                    var versionGroups: [String: [Package]] = [:]
+                    for package in summay {
+                        if let version = package.latestVersion {
+                            versionGroups[version, default: []].append(package)
                         }
                     }
+                    
+                    // Find the newest version considering RootHide priority (arm64e > arm64)
+                    var selectedPackage: Package? = nil
+                    let sortedVersions = versionGroups.keys.sorted { versionA, versionB in
+                        Package.compareVersion(versionA, b: versionB) == .aIsBiggerThenB
+                    }
+                    
+                    for version in sortedVersions {
+                        let packages = versionGroups[version] ?? []
+                        if packages.count == 1 {
+                            selectedPackage = packages[0]
+                            break
+                        } else {
+                            // Multiple packages with same version, prioritize based on architecture
+                            // arm64e = RootHide, arm64 = Rootless
+                            let rootHidePackages = packages.filter { package in
+                                guard let metadata = package.latestMetadata else { return false }
+                                let architecture = metadata["architecture"] ?? metadata["Architecture"] ?? ""
+                                return architecture.lowercased().contains("arm64e")
+                            }
+                            
+                            if !rootHidePackages.isEmpty {
+                                selectedPackage = rootHidePackages[0]
+                                break
+                            } else {
+                                // Fallback to first available package if no arm64e found
+                                selectedPackage = packages[0]
+                                break
+                            }
+                        }
+                    }
+                    
+                    guard let finalPackage = selectedPackage,
+                          let finalVersion = finalPackage.latestVersion else { continue }
+                    
+                    let repoRef = finalPackage.repoRef
                     // compare to what we have
                     if let fetch = tableTraceBuilder[item] {
                         // found, check if updated
