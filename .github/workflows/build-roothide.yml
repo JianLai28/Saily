@@ -1,0 +1,91 @@
+name: Build RootHide Release
+on: 
+  workflow_dispatch:
+  push:
+    branches: [ main, master ]
+    tags: [ 'v*' ]
+
+jobs:
+  build:
+    runs-on: macos-13
+    steps:
+      - name: Checkout
+        uses: actions/checkout@master
+
+      - name: Install Dependencies
+        run: |
+          brew install ldid xz dpkg coreutils
+          sudo xcode-select --switch /Applications/Xcode_14.2.app
+
+      - name: Cache Dependencies
+        uses: actions/cache@v3
+        with:
+          path: |
+            ~/Library/Caches/Homebrew
+            ~/Library/Developer/Xcode/DerivedData
+          key: ${{ runner.os }}-deps-${{ hashFiles('**/Package.resolved') }}
+          restore-keys: |
+            ${{ runner.os }}-deps-
+
+      - name: Build RootHide Package
+        run: |
+          chmod +x Resources/compile.release.roothide.sh
+          Resources/compile.release.roothide.sh
+
+      - name: Upload Artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: roothide-deb-package
+          path: |
+            *.deb
+            build/Release-*/**/*.deb
+          retention-days: 30
+
+      - name: Create Release
+        if: startsWith(github.ref, 'refs/tags/')
+        uses: softprops/action-gh-release@v1
+        with:
+          tag_name: ${{ github.ref_name }}
+          name: Saily RootHide ${{ github.ref_name }}
+          body: |
+            ## Saily RootHide Release
+            
+            This is an automated build of Saily with RootHide support.
+            
+            ### Installation
+            1. Download the `.deb` file below
+            2. Install via Filza or your preferred package manager
+            3. Respring your device
+            
+            ### File
+            - **Package**: Saily RootHide iOS package
+            - **Compatibility**: iOS 13.0+
+            - **Architecture**: arm64/arm64e
+          prerelease: false
+          token: ${{ secrets.GITHUB_TOKEN }}
+          files: |
+            *.deb
+
+  build-legacy:
+    runs-on: macos-12
+    steps:
+      - name: Checkout
+        uses: actions/checkout@master
+
+      - name: Install Dependencies
+        run: |
+          brew install ldid xz dpkg coreutils
+          sudo xcode-select --switch /Applications/Xcode_14.1.app
+
+      - name: Build Legacy Package
+        run: |
+          chmod +x Resources/compile.release.roothide.sh
+          Resources/compile.release.roothide.sh
+
+      - name: Upload Legacy Artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: roothide-legacy-deb-package
+          path: |
+            *.deb
+            build/Release-*/**/*.deb

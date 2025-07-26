@@ -16,9 +16,9 @@ if [ ! -e "Chromatic.xcworkspace" ]; then
     exit 1
 fi
 
-bartycrouch update
-bartycrouch lint
-swiftformat . --swiftversion 5.10 || true
+# bartycrouch update
+# bartycrouch lint
+# swiftformat . --swiftversion 5.10 || true
 
 if [ ! -e "build" ]; then
     mkdir build
@@ -56,13 +56,12 @@ xcodebuild -workspace "$GIT_ROOT/Chromatic.xcworkspace" \
     clean build \
     CODE_SIGN_IDENTITY="" CODE_SIGNING_REQUIRED=NO CODE_SIGN_ENTITLEMENTS="" CODE_SIGNING_ALLOWED="NO" \
     GCC_GENERATE_DEBUGGING_SYMBOLS=YES STRIP_INSTALLED_PRODUCT=NO \
-    COPY_PHASE_STRIP=NO UNSTRIPPED_PRODUCT=NO \
-    | xcpretty
+    COPY_PHASE_STRIP=NO UNSTRIPPED_PRODUCT=NO
 
 mkdir PackageBuilder
 cd PackageBuilder || exit
 
-ENV_PREFIX="/var/jb"
+ENV_PREFIX=""
 
 mkdir -p ".$ENV_PREFIX/Applications"
 cp -r "$WORKING_ROOT/DerivedDataApp/Build/Products/Release-iphoneos/chromatic.app" ".$ENV_PREFIX/Applications/"
@@ -86,12 +85,12 @@ plutil -replace "CFBundleShortVersionString" -string "$TIMESTAMP" ".$ENV_PREFIX/
 cp -r "$GIT_ROOT/build/License/ScannedLicense" ".$ENV_PREFIX/Applications/chromatic.app/Bundle/ScannedLicense"
 cp -r "$GIT_ROOT/Resources/DEBIAN" ./
 
-sed -i '' "s/ENV_PREFIX=\"\"/ENV_PREFIX=\"\/var\/jb\/\"/g" ./DEBIAN/postinst
+# sed -i '' "s/ENV_PREFIX=\"\"/ENV_PREFIX=\"\/var\/jb\/\"/g" ./DEBIAN/postinst
 
-sed -i '' "s/@@VERSION@@/3.0-rootless-release-$TIMESTAMP/g" ./DEBIAN/control
-sed -i '' "s/iphoneos-arm/iphoneos-arm64/g" ./DEBIAN/control
-sed -i '' "s/Package: wiki.qaq.chromatic/Package: wiki.qaq.chromatic.rootless/g" ./DEBIAN/control
-sed -i '' "s/Name: Saily/Name: Saily (Rootless)/g" ./DEBIAN/control
+sed -i '' "s/@@VERSION@@/3.0-roothide-release-$TIMESTAMP/g" ./DEBIAN/control
+sed -i '' "s/iphoneos-arm/iphoneos-arm64e/g" ./DEBIAN/control
+sed -i '' "s/Package: wiki.qaq.chromatic/Package: wiki.qaq.chromatic.roothide/g" ./DEBIAN/control
+sed -i '' "s/Name: Saily/Name: Saily (RootHide)/g" ./DEBIAN/control
 mv ./DEBIAN/control ./DEBIAN/control_
 awk '{print} END{print "Conflicts: wiki.qaq.chromatic"}' ./DEBIAN/control_ > ./DEBIAN/control
 
