@@ -190,39 +190,35 @@ extension PackageCenter {
                     let summay = [Package](self.obtainPackageSummary(with: item).values)
                     guard summay.count > 0 else { continue }
                     
-                    // Group packages by version to handle RootHide priority based on architecture
-                    var versionGroups: [String: [Package]] = [:]
-                    for package in summay {
-                        if let version = package.latestVersion {
-                            versionGroups[version, default: []].append(package)
-                        }
-                    }
-                    
-                    // Find the newest version considering RootHide priority (arm64e > arm64)
+                    // Find the newest version across all packages
                     var selectedPackage: Package? = nil
-                    let sortedVersions = versionGroups.keys.sorted { versionA, versionB in
+                    
+                    // First, get all versions and sort them from newest to oldest
+                    let allVersions = summay.compactMap { $0.latestVersion }
+                    let sortedVersions = allVersions.sorted { versionA, versionB in
                         Package.compareVersion(versionA, b: versionB) == .aIsBiggerThenB
                     }
                     
-                    // Always select the newest version first, then apply RootHide priority within that version
                     if let newestVersion = sortedVersions.first {
-                        let packages = versionGroups[newestVersion] ?? []
-                        if packages.count == 1 {
-                            selectedPackage = packages[0]
+                        // Find all packages with the newest version
+                        let newestPackages = summay.filter { $0.latestVersion == newestVersion }
+                        
+                        if newestPackages.count == 1 {
+                            selectedPackage = newestPackages[0]
                         } else {
-                            // Multiple packages with same version, prioritize based on architecture
-                            // arm64e = RootHide, arm64 = Rootless
-                            let rootHidePackages = packages.filter { package in
+                            // Multiple packages with same newest version, prioritize RootHide
+                            let rootHidePackages = newestPackages.filter { package in
                                 guard let metadata = package.latestMetadata else { return false }
-                                let architecture = metadata["architecture"] ?? metadata["Architecture"] ?? ""
-                                return architecture.lowercased().contains("arm64e")
+                                let architecture = metadata["architecture"] ?? metadata["Architecture"] ?? metadata["arch"] ?? ""
+                                let archLower = architecture.lowercased()
+                                return archLower.contains("arm64e")
                             }
                             
                             if !rootHidePackages.isEmpty {
                                 selectedPackage = rootHidePackages[0]
                             } else {
-                                // Fallback to Rootless if no RootHide version found
-                                selectedPackage = packages[0]
+                                // Use first available package
+                                selectedPackage = newestPackages[0]
                             }
                         }
                     }
