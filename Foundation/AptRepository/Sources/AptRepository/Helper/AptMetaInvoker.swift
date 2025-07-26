@@ -38,25 +38,37 @@ func invokePackages(withContext original: String, fromRepo: URL? = nil) -> [Stri
             
             if let package = resultBuilder[id] {
                 
-                let existingArch = package.latestMetadata?["architecture"] ?? ""
-                
-                if existingArch.contains("arm64e") && !architecture.contains("arm64e") {
+                // Check if we already have this version
+                if let existingMetadata = package.payload[ver] {
+                    // For same version, prefer arm64e over arm64
+                    let existingArch = existingMetadata["architecture"] ?? ""
+                    
+                    if existingArch.contains("arm64e") && !architecture.contains("arm64e") {
+                        return
+                    }
+                    
+                    if !existingArch.contains("arm64e") && architecture.contains("arm64e") {
+                        // Replace with arm64e version
+                        var newpayload = package.payload
+                        newpayload[ver] = metadata
+                        let newPackage = Package(identity: package.identity,
+                                                 payload: newpayload,
+                                                 repoRef: package.repoRef)
+                        resultBuilder[id] = newPackage
+                        return
+                    }
+                    
+                    // If both have same architecture or both don't have arm64e, keep the existing one
                     return
+                } else {
+                    // Different version, add it to the package
+                    var newpayload = package.payload
+                    newpayload[ver] = metadata
+                    let newPackage = Package(identity: package.identity,
+                                             payload: newpayload,
+                                             repoRef: package.repoRef)
+                    resultBuilder[id] = newPackage
                 }
-
-                if !existingArch.contains("arm64e") && architecture.contains("arm64e") {
-                    resultBuilder[id] = Package(identity: id,
-                                               payload: [ver: metadata],
-                                               repoRef: fromRepo)
-                    return
-                }
-                
-                var newpayload = package.payload
-                newpayload[ver] = metadata
-                let newPackage = Package(identity: package.identity,
-                                         payload: newpayload,
-                                         repoRef: package.repoRef)
-                resultBuilder[id] = newPackage
             } else {
                 resultBuilder[id] = Package(identity: id,
                                             payload: [ver: metadata],

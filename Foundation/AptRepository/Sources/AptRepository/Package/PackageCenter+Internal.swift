@@ -189,58 +189,30 @@ extension PackageCenter {
                     // get newest version that exists
                     let summay = [Package](self.obtainPackageSummary(with: item).values)
                     guard summay.count > 0 else { continue }
-                    
-                    // Find the newest version across all packages
-                    var selectedPackage: Package? = nil
-                    
-                    // First, get all versions and sort them from newest to oldest
-                    let allVersions = summay.compactMap { $0.latestVersion }
-                    let sortedVersions = allVersions.sorted { versionA, versionB in
-                        Package.compareVersion(versionA, b: versionB) == .aIsBiggerThenB
-                    }
-                    
-                    if let newestVersion = sortedVersions.first {
-                        // Find all packages with the newest version
-                        let newestPackages = summay.filter { $0.latestVersion == newestVersion }
-                        
-                        if newestPackages.count == 1 {
-                            selectedPackage = newestPackages[0]
-                        } else {
-                            // Multiple packages with same newest version, prioritize RootHide
-                            let rootHidePackages = newestPackages.filter { package in
-                                guard let metadata = package.latestMetadata else { return false }
-                                let architecture = metadata["architecture"] ?? metadata["Architecture"] ?? metadata["arch"] ?? ""
-                                let archLower = architecture.lowercased()
-                                return archLower.contains("arm64e")
-                            }
-                            
-                            if !rootHidePackages.isEmpty {
-                                selectedPackage = rootHidePackages[0]
-                            } else {
-                                // Use first available package
-                                selectedPackage = newestPackages[0]
-                            }
+                    var repoRef: URL? = summay[0].repoRef
+                    var newestVersion = summay[0].latestVersion ?? "0"
+                    for value in summay {
+                        if let version = value.latestVersion,
+                           Package.compareVersion(version, b: newestVersion) == .aIsBiggerThenB
+                        {
+                            newestVersion = version
+                            repoRef = value.repoRef
                         }
                     }
-                    
-                    guard let finalPackage = selectedPackage,
-                          let finalVersion = finalPackage.latestVersion else { continue }
-                    
-                    let repoRef = finalPackage.repoRef
                     // compare to what we have
                     if let fetch = tableTraceBuilder[item] {
                         // found, check if updated
-                        let compare = Package.compareVersion(finalVersion, b: fetch.version)
+                        let compare = Package.compareVersion(newestVersion, b: fetch.version)
                         if compare == .aIsBiggerThenB {
                             // updated
                             tableTraceBuilder[item] = .init(identity: item,
-                                                            version: finalVersion,
+                                                            version: newestVersion,
                                                             repo: repoRef,
                                                             lastModification: date)
                         } else if compare == .aIsSmallerThenB {
                             // newer one removed!
                             tableTraceBuilder[item] = .init(identity: item,
-                                                            version: finalVersion,
+                                                            version: newestVersion,
                                                             repo: repoRef,
                                                             lastModification: nil)
                         }
@@ -255,12 +227,12 @@ extension PackageCenter {
                             // and the repo is not currently in any initial load's commit
                             // we need to put it into display
                             tableTraceBuilder[item] = .init(identity: item,
-                                                            version: finalVersion,
+                                                            version: newestVersion,
                                                             repo: repoRef,
                                                             lastModification: nil)
                         } else {
                             tableTraceBuilder[item] = .init(identity: item,
-                                                            version: finalVersion,
+                                                            version: newestVersion,
                                                             repo: repoRef,
                                                             lastModification: date)
                         }
