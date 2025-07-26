@@ -204,11 +204,11 @@ extension PackageCenter {
                         Package.compareVersion(versionA, b: versionB) == .aIsBiggerThenB
                     }
                     
-                    for version in sortedVersions {
-                        let packages = versionGroups[version] ?? []
+                    // Always select the newest version first, then apply RootHide priority within that version
+                    if let newestVersion = sortedVersions.first {
+                        let packages = versionGroups[newestVersion] ?? []
                         if packages.count == 1 {
                             selectedPackage = packages[0]
-                            break
                         } else {
                             // Multiple packages with same version, prioritize based on architecture
                             // arm64e = RootHide, arm64 = Rootless
@@ -220,11 +220,9 @@ extension PackageCenter {
                             
                             if !rootHidePackages.isEmpty {
                                 selectedPackage = rootHidePackages[0]
-                                break
                             } else {
-                                // Fallback to first available package if no arm64e found
+                                // Fallback to Rootless if no RootHide version found
                                 selectedPackage = packages[0]
-                                break
                             }
                         }
                     }
