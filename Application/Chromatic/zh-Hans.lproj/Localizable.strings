@@ -636,3 +636,6 @@
 
 /* Worldwide Search */
 "WORLDWIDE_SEARCH" = "全局搜索";
+
+/* Show Both Architectures */
+"SHOW_BOTH_ARCHITECTURES" = "显示两种架构";

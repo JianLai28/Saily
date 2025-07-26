@@ -636,3 +636,6 @@
 
 /* Share Failed */
 "SHARE_FAILED" = "";
+
+/* Show Both Architectures */
+"SHOW_BOTH_ARCHITECTURES" = "Show Both Architectures";

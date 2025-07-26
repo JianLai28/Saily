@@ -636,3 +636,6 @@
 
 /* Worldwide Search */
 "WORLDWIDE_SEARCH" = "Tìm kiếm trên toàn Thế Giới";
+
+/* Show Both Architectures */
+"SHOW_BOTH_ARCHITECTURES" = "Hiển thị Cả Hai Kiến Trúc";

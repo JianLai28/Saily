@@ -532,6 +532,9 @@
 /* Share */
 "SHARE" = "Partager";
 
+/* Show Both Architectures */
+"SHOW_BOTH_ARCHITECTURES" = "Afficher les deux architectures";
+
 /* Share Failed */
 "SHARE_FAILED" = "Échec du partage";
 

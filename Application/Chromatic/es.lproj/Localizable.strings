@@ -636,3 +636,6 @@
 
 /* Worldwide Search */
 "WORLDWIDE_SEARCH" = "Búsqueda mundial";
+
+/* Show Both Architectures */
+"SHOW_BOTH_ARCHITECTURES" = "Mostrar ambas arquitecturas";
