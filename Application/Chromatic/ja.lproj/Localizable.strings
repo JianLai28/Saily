@@ -478,7 +478,7 @@
 "REPO_COLLECTIONS" = "新しいリポジトリを探す";
 
 /* The software source (aka repo) contains various plug-ins, applications, themes, and ringtones, which are maintained by official or unofficial organizations or individuals. You can add any software source without restrictions, but please note that we cannot confirm that the data or information they provide is safe, they may damage your system or equipment, making it impossible to recover. */
-"REPO_DESCRIPTION" = "ソフトウェア・ソース(別名リポジトリ) には、公式または非公式の組織または個人によって管理されているさまざまなプラグイン、アプリケーシオン、テーマ、および着信音が含まれています。 制限なしにソフトウェアソースを追加することはできますが、提供するデータや情報が安全であることを確認することはできませんのでご注意ください。 システムや機器を破壊し、修復が不可能になる危険性があります。";
+"REPO_DESCRIPTION" = "ソフトウェア・ソース(別名リポジトリ) には、公式または非公式の組織または個人によって管理されているさまざまなプラグイン、アプリケーション、テーマ、および着信音が含まれています。 制限なしにソフトウェアソースを追加することはできますが、提供するデータや情報が安全であることを確認することはできませんのでご注意ください。 システムや機器を破壊し、修復が不可能になる危険性があります。";
 
 /* Repo Featured */
 "REPO_FEATURED" = "おすすめのパッケージ";
@@ -639,6 +639,3 @@
 
 /* Worldwide Search */
 "WORLDWIDE_SEARCH" = "ワールドワイド検索";
-
-/* Show Both Architectures */
-"SHOW_BOTH_ARCHITECTURES" = "両方のアーキテクチャを表示";

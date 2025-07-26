@@ -532,9 +532,6 @@
 /* Share */
 "SHARE" = "Condividi";
 
-/* Show Both Architectures */
-"SHOW_BOTH_ARCHITECTURES" = "Mostra entrambe le architetture";
-
 /* Share Failed */
 "SHARE_FAILED" = "Condivisione fallita";
 

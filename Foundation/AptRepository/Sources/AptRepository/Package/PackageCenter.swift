@@ -129,13 +129,6 @@ public final class PackageCenter {
         }
     }
 
-    @PropertiesWrapper(key: "\(kPackageCenterIdentity).showBothArchitectures", defaultValue: false)
-    public var showBothArchitectures: Bool {
-        didSet {
-            dispatchNotification()
-        }
-    }
-
     // MARK: - PERSIST ENGINE
 
     /// encoder

@@ -121,16 +121,6 @@ extension SettingView {
             }, dataSource: displayDataSource)
             dropDown.show(onTopOf: dropDownAnchor.window)
         }
-        
-        let showBothArchitectures = SettingElement(iconSystemNamed: "cpu",
-                                                   text: NSLocalizedString("SHOW_BOTH_ARCHITECTURES", comment: "Show Both Architectures"),
-                                                   dataType: .switcher,
-                                                   initData: {
-                                                       PackageCenter.default.showBothArchitectures ? "YES" : "NO"
-                                                   }) { changeToOpen, _ in
-            PackageCenter.default.showBothArchitectures = changeToOpen ?? false
-            self.dispatchValueUpdate()
-        }
 
         addSubview(backgroundEffect)
         addSubview(openDownloadedPackages)
@@ -138,7 +128,6 @@ extension SettingView {
         addSubview(softwareAutoUpdateWhenLaunch)
         addSubview(blockedUpdate)
         addSubview(preferredDepiction)
-        addSubview(showBothArchitectures)
 
         openDownloadedPackages.snp.makeConstraints { x in
             makeElement(constraint: x, widthAnchor: safeAnchor, topAnchor: anchor)
@@ -160,10 +149,6 @@ extension SettingView {
             makeElement(constraint: x, widthAnchor: safeAnchor, topAnchor: anchor)
         }
         anchor = preferredDepiction
-        showBothArchitectures.snp.makeConstraints { x in
-            makeElement(constraint: x, widthAnchor: safeAnchor, topAnchor: anchor)
-        }
-        anchor = showBothArchitectures
         backgroundEffect.snp.makeConstraints { x in
             x.left.equalTo(safeAnchor.snp.left)
             x.right.equalTo(safeAnchor.snp.right)

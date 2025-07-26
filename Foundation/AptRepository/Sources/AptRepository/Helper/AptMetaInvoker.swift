@@ -17,8 +17,6 @@ import Foundation
 /// - Returns: container
 func invokePackages(withContext original: String, fromRepo: URL? = nil) -> [String: Package] {
     var resultBuilder = [String: Package]()
-    let showBothArch = PackageCenter.default.showBothArchitectures
-    
     original
         .replacingOccurrences(of: "\r\n", with: "\n")
         .replacingOccurrences(of: "\r", with: "\n")
@@ -42,25 +40,6 @@ func invokePackages(withContext original: String, fromRepo: URL? = nil) -> [Stri
                 
                 // Check if we already have this version
                 if let existingMetadata = package.payload[ver] {
-                    // If showBothArch is enabled, add both architectures
-                    if showBothArch {
-                        // Check if architectures are different
-                        let existingArch = existingMetadata["architecture"] ?? ""
-                        if existingArch != architecture {
-                            // Different architectures, add both
-                            var newpayload = package.payload
-                            newpayload[ver] = metadata
-                            let newPackage = Package(identity: package.identity,
-                                                     payload: newpayload,
-                                                     repoRef: package.repoRef)
-                            resultBuilder[id] = newPackage
-                            return
-                        } else {
-                            // Same architecture, keep the existing one
-                            return
-                        }
-                    }
-                    
                     // For same version, prefer arm64e over arm64
                     let existingArch = existingMetadata["architecture"] ?? ""
                     
