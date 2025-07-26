@@ -236,17 +236,17 @@ extension PackageCenter {
                     // compare to what we have
                     if let fetch = tableTraceBuilder[item] {
                         // found, check if updated
-                        let compare = Package.compareVersion(newestVersion, b: fetch.version)
+                        let compare = Package.compareVersion(finalVersion, b: fetch.version)
                         if compare == .aIsBiggerThenB {
                             // updated
                             tableTraceBuilder[item] = .init(identity: item,
-                                                            version: newestVersion,
+                                                            version: finalVersion,
                                                             repo: repoRef,
                                                             lastModification: date)
                         } else if compare == .aIsSmallerThenB {
                             // newer one removed!
                             tableTraceBuilder[item] = .init(identity: item,
-                                                            version: newestVersion,
+                                                            version: finalVersion,
                                                             repo: repoRef,
                                                             lastModification: nil)
                         }
@@ -261,12 +261,12 @@ extension PackageCenter {
                             // and the repo is not currently in any initial load's commit
                             // we need to put it into display
                             tableTraceBuilder[item] = .init(identity: item,
-                                                            version: newestVersion,
+                                                            version: finalVersion,
                                                             repo: repoRef,
                                                             lastModification: nil)
                         } else {
                             tableTraceBuilder[item] = .init(identity: item,
-                                                            version: newestVersion,
+                                                            version: finalVersion,
                                                             repo: repoRef,
                                                             lastModification: date)
                         }
