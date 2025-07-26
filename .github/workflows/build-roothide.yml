@@ -30,7 +30,7 @@ jobs:
       - name: Build RootHide Package
         run: |
           chmod +x Resources/compile.release.roothide.sh
-          Resources/compile.release.roothide.sh
+          Resources/compile.release.roothide.sh clean
 
       - name: Upload Artifacts
         uses: actions/upload-artifact@v4
@@ -80,7 +80,7 @@ jobs:
       - name: Build Legacy Package
         run: |
           chmod +x Resources/compile.release.roothide.sh
-          Resources/compile.release.roothide.sh
+          Resources/compile.release.roothide.sh clean
 
       - name: Upload Legacy Artifacts
         uses: actions/upload-artifact@v4
