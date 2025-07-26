@@ -16,9 +16,9 @@ if [ ! -e "Chromatic.xcworkspace" ]; then
     exit 1
 fi
 
-# bartycrouch update
-# bartycrouch lint
-# swiftformat . --swiftversion 5.10 || true
+bartycrouch update
+bartycrouch lint
+swiftformat . --swiftversion 5.10 || true
 
 if [ ! -e "build" ]; then
     mkdir build
@@ -53,17 +53,11 @@ xcodebuild -workspace "$GIT_ROOT/Chromatic.xcworkspace" \
     -scheme Chromatic -configuration Release \
     -derivedDataPath "$WORKING_ROOT/DerivedDataApp" \
     -destination 'generic/platform=iOS' \
-    -arch arm64 \
-    -sdk iphoneos \
     clean build \
     CODE_SIGN_IDENTITY="" CODE_SIGNING_REQUIRED=NO CODE_SIGN_ENTITLEMENTS="" CODE_SIGNING_ALLOWED="NO" \
     GCC_GENERATE_DEBUGGING_SYMBOLS=YES STRIP_INSTALLED_PRODUCT=NO \
     COPY_PHASE_STRIP=NO UNSTRIPPED_PRODUCT=NO \
-    ONLY_ACTIVE_ARCH=YES \
-    | tee build.log || exit 1
-
-echo "Build completed, checking output..."
-find "$WORKING_ROOT/DerivedDataApp/Build/Products" -name "*.app" -type d
+    | xcpretty
 
 mkdir PackageBuilder
 cd PackageBuilder || exit
@@ -71,38 +65,25 @@ cd PackageBuilder || exit
 ENV_PREFIX=""
 
 mkdir -p ".$ENV_PREFIX/Applications"
+cp -r "$WORKING_ROOT/DerivedDataApp/Build/Products/Release-iphoneos/chromatic.app" ".$ENV_PREFIX/Applications/"
 
-# 查找.app文件并复制
-echo "Searching for .app files..."
-APP_PATH=$(find "$WORKING_ROOT/DerivedDataApp/Build/Products" -name "*.app" -type d | head -1)
-if [ -z "$APP_PATH" ]; then
-    echo "ERROR: No .app file found in build output!"
-    echo "Contents of build directory:"
-    find "$WORKING_ROOT/DerivedDataApp/Build/Products" -type d | head -20
-    exit 1
+codesign --remove ".$ENV_PREFIX/Applications/chromatic.app"
+if [ -e ".$ENV_PREFIX/Applications/chromatic.app/_CodeSignature" ]; then
+    rm -rf ".$ENV_PREFIX/Applications/chromatic.app/_CodeSignature"
 fi
-echo "Found .app file: $APP_PATH"
-APP_NAME=$(basename "$APP_PATH" .app)
-echo "App name: $APP_NAME"
-cp -r "$APP_PATH" ".$ENV_PREFIX/Applications/"
-
-codesign --remove ".$ENV_PREFIX/Applications/$APP_NAME.app"
-if [ -e ".$ENV_PREFIX/Applications/$APP_NAME.app/_CodeSignature" ]; then
-    rm -rf ".$ENV_PREFIX/Applications/$APP_NAME.app/_CodeSignature"
-fi
-if [ -e ".$ENV_PREFIX/Applications/$APP_NAME.app/embedded.mobileprovision" ]; then
-    rm -rf ".$ENV_PREFIX/Applications/$APP_NAME.app/embedded.mobileprovision"
+if [ -e ".$ENV_PREFIX/Applications/chromatic.app/embedded.mobileprovision" ]; then
+    rm -rf ".$ENV_PREFIX/Applications/chromatic.app/embedded.mobileprovision"
 fi
 
 curl -L -o "$GIT_ROOT/ldid_macosx_x86_64" https://github.com/ProcursusTeam/ldid/releases/download/v2.1.5-procursus7/ldid_macosx_x86_64
 chmod +x "$GIT_ROOT/ldid_macosx_x86_64"
-"$GIT_ROOT/ldid_macosx_x86_64" -S"$GIT_ROOT/Application/Chromatic/Entitlements.plist" ".$ENV_PREFIX/Applications/$APP_NAME.app/$APP_NAME"
-plutil -replace "CFBundleDisplayName" -string "Saily" ".$ENV_PREFIX/Applications/$APP_NAME.app/Info.plist"
-plutil -replace "CFBundleIdentifier" -string "wiki.qaq.chromatic.release" ".$ENV_PREFIX/Applications/$APP_NAME.app/Info.plist"
-plutil -replace "CFBundleVersion" -string "3.0" ".$ENV_PREFIX/Applications/$APP_NAME.app/Info.plist"
-plutil -replace "CFBundleShortVersionString" -string "$TIMESTAMP" ".$ENV_PREFIX/Applications/$APP_NAME.app/Info.plist"
+"$GIT_ROOT/ldid_macosx_x86_64" -S"$GIT_ROOT/Application/Chromatic/Entitlements.plist" ".$ENV_PREFIX/Applications/chromatic.app/chromatic"
+plutil -replace "CFBundleDisplayName" -string "Saily" ".$ENV_PREFIX/Applications/chromatic.app/Info.plist"
+plutil -replace "CFBundleIdentifier" -string "wiki.qaq.chromatic.release" ".$ENV_PREFIX/Applications/chromatic.app/Info.plist"
+plutil -replace "CFBundleVersion" -string "3.0" ".$ENV_PREFIX/Applications/chromatic.app/Info.plist"
+plutil -replace "CFBundleShortVersionString" -string "$TIMESTAMP" ".$ENV_PREFIX/Applications/chromatic.app/Info.plist"
 
-cp -r "$GIT_ROOT/build/License/ScannedLicense" ".$ENV_PREFIX/Applications/$APP_NAME.app/Bundle/ScannedLicense"
+cp -r "$GIT_ROOT/build/License/ScannedLicense" ".$ENV_PREFIX/Applications/chromatic.app/Bundle/ScannedLicense"
 cp -r "$GIT_ROOT/Resources/DEBIAN" ./
 
 # sed -i '' "s/ENV_PREFIX=\"\"/ENV_PREFIX=\"\/var\/jb\/\"/g" ./DEBIAN/postinst
